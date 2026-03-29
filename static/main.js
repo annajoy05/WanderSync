@@ -1567,6 +1567,7 @@ function renderUserProfile(data) {
         document.getElementById('profile-name').innerText = data.full_name;
         document.getElementById('profile-headline').innerText = data.headline || "Explorer & Travel Enthusiast";
         document.getElementById('profile-loc-text').innerText = data.location || "Global Citizen";
+        document.getElementById('profile-phone-text').innerText = data.phone || "Not provided";
         document.getElementById('profile-bio').innerText = data.bio || "No bio added yet. Share your travel philosophy with the community!";
         
         if (data.profile_pic) document.getElementById('profile-pic-img').src = data.profile_pic;
@@ -1577,6 +1578,8 @@ function renderUserProfile(data) {
         document.getElementById('stat-level').innerText = data.level.level;
         
         // Populate edit modal
+        document.getElementById('edit-name').value = data.full_name || '';
+        document.getElementById('edit-phone').value = data.phone || '';
         document.getElementById('edit-headline').value = data.headline || '';
         document.getElementById('edit-location').value = data.location || '';
         document.getElementById('edit-bio').value = data.bio || '';
@@ -1663,15 +1666,23 @@ function toggleModal(id, show) {
 }
 
 async function saveProfileChanges() {
+    const full_name = document.getElementById('edit-name').value;
+    const phone = document.getElementById('edit-phone').value;
     const headline = document.getElementById('edit-headline').value;
     const location = document.getElementById('edit-location').value;
+    const bio = document.getElementById('edit-bio').value;
     const disability_info = document.getElementById('edit-disability').value;
     
+    if (!full_name) {
+        alert("Name cannot be empty!");
+        return;
+    }
+
     try {
         const res = await fetch('/api/user/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ headline, location, bio, disability_info })
+            body: JSON.stringify({ full_name, phone, headline, location, bio, disability_info })
         });
         
         if (res.ok) {

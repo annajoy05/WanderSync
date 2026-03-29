@@ -30,7 +30,8 @@ def init_db():
             location TEXT DEFAULT '',
             profile_pic TEXT DEFAULT '',
             cover_pic TEXT DEFAULT '',
-            google_id TEXT UNIQUE
+            google_id TEXT UNIQUE,
+            phone TEXT DEFAULT ''
         );
 
         CREATE TABLE IF NOT EXISTS trip_experiences (
@@ -133,6 +134,16 @@ def init_db():
     
     conn.commit()
     c.close()
+    
+    # Run migrations/fixes for existing tables
+    c = conn.cursor()
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT \'\';')
+        conn.commit()
+    except:
+        conn.rollback()
+    c.close()
+
     conn.close()
 
 if __name__ == '__main__':

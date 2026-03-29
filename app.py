@@ -889,7 +889,7 @@ def get_user_profile():
     
     conn = database.get_db_connection()
     c = conn.cursor(cursor_factory=database.RealDictCursor)
-    c.execute('SELECT full_name, email, points, achievements, headline, bio, location, profile_pic, cover_pic, disability_info FROM users WHERE user_id = %s', (user_id,))
+    c.execute('SELECT full_name, email, points, achievements, headline, bio, location, profile_pic, cover_pic, disability_info, phone FROM users WHERE user_id = %s', (user_id,))
     user = c.fetchone()
     
     # Also fetch travel stats
@@ -915,6 +915,7 @@ def get_user_profile():
         'profile_pic': user['profile_pic'],
         'cover_pic': user['cover_pic'],
         'disability_info': user['disability_info'],
+        'phone': user['phone'],
         'stats': {
             'total_trips': stats['total_trips'],
             'total_spent': round(float(stats['total_spent'] or 0), 2)
@@ -933,6 +934,8 @@ def update_user_profile():
     bio = data.get('bio')
     location = data.get('location')
     disability_info = data.get('disability_info')
+    full_name = data.get('full_name')
+    phone = data.get('phone')
     
     conn = database.get_db_connection()
     c = conn.cursor()
@@ -942,9 +945,11 @@ def update_user_profile():
             SET headline = COALESCE(%s, headline), 
                 bio = COALESCE(%s, bio), 
                 location = COALESCE(%s, location),
-                disability_info = COALESCE(%s, disability_info)
+                disability_info = COALESCE(%s, disability_info),
+                full_name = COALESCE(%s, full_name),
+                phone = COALESCE(%s, phone)
             WHERE user_id = %s
-        ''', (headline, bio, location, disability_info, user_id))
+        ''', (headline, bio, location, disability_info, full_name, phone, user_id))
         conn.commit()
         conn.close()
         return jsonify({'message': 'Profile updated successfully'})

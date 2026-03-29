@@ -255,7 +255,8 @@
                             <div class="profile-summary" style="padding-bottom: 0.75rem;">
                                 <h1 id="profile-name" style="font-size: 2.2rem; margin-bottom: 0.4rem; letter-spacing: -0.02em;">{{ user['full_name'] }}</h1>
                                 <p id="profile-headline" style="color: var(--brand-primary); font-weight: 500; font-size: 1.1rem; margin-bottom: 0.6rem; opacity: 0.9;">Adventurous Explorer | WanderSync Pro</p>
-                                <p id="profile-location" style="color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-map-marker-alt"></i><span id="profile-loc-text">Global Citizen</span></p>
+                                <p id="profile-location" style="color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt"></i><span id="profile-loc-text">Global Citizen</span></p>
+                                <p id="profile-phone-display" style="color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-phone"></i><span id="profile-phone-text">Not provided</span></p>
                             </div>
                         </div>
                         
@@ -313,6 +314,14 @@
             <div class="dashboard-modal-card glass-card">
                 <h2>Edit Profile</h2>
                 <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="edit-name" placeholder="Your full name">
+                </div>
+                <div class="input-group mt-2">
+                    <label>Phone Number</label>
+                    <input type="text" id="edit-phone" placeholder="e.g. +91 9876543210">
+                </div>
+                <div class="input-group mt-2">
                     <label>Headline</label>
                     <input type="text" id="edit-headline" placeholder="e.g. World Explorer | Photography Buff">
                 </div>
