@@ -1138,10 +1138,10 @@ async function submitComment(e, blogId) {
 // WANDERSNAPS LOGIC
 // ==========================================
 const snapsData = [
-    { id: 0, title: "Munnar Bliss", img: "/static/snaps/munnar.png", user: "Arjun S.", caption: "Waking up to these misty peaks is a dream come true! 🏔️" },
-    { id: 1, title: "Golden Hour", img: "/static/snaps/teagarden.png", user: "Meera K.", caption: "Tea gardens look magical when the sun starts to dip. 🍵✨" },
-    { id: 2, title: "Vembanad", img: "/static/snaps/backwaters.png", user: "Rahul V.", caption: "Cruising through the backwaters. Pure serenity. 🛶" },
-    { id: 3, title: "Houseboat", img: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80", user: "Community", caption: "The classic Kerala experience. Must try once! 🌴" }
+    { id: 0, location: "Munnar", title: "Munnar Bliss", img: "/static/snaps/munnar.png", user: "Arjun S.", caption: "Waking up to these misty peaks is a dream come true! 🏔️" },
+    { id: 1, location: "Thekkady", title: "Golden Hour", img: "/static/snaps/teagarden.png", user: "Meera K.", caption: "Tea gardens look magical when the sun starts to dip. 🍵✨" },
+    { id: 2, location: "Vembanad", title: "Vembanad", img: "/static/snaps/backwaters.png", user: "Rahul V.", caption: "Cruising through the backwaters. Pure serenity. 🛶" },
+    { id: 3, location: "Alleppey", title: "Houseboat", img: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80", user: "Community", caption: "The classic Kerala experience. Must try once! 🌴" }
 ];
 
 let currentSnapIndex = 0;
@@ -1154,7 +1154,7 @@ function openSnap(index) {
     const viewer = document.getElementById('wandersnaps-viewer');
     viewer.classList.remove('hidden');
     
-    renderProgressBars();
+    // renderProgressBars(); // Removed non-existent function call
     renderSnap();
 }
 
@@ -1252,6 +1252,7 @@ function previewSnapImage(event) {
 function finalizeAddSnap(event) {
     event.preventDefault();
     
+    const location = document.getElementById('snap-location').value;
     const caption = document.getElementById('snap-caption').value;
     const userName = document.getElementById('snap-user-name').value;
     const imgSrc = document.getElementById('snap-preview-img').src;
@@ -1259,7 +1260,8 @@ function finalizeAddSnap(event) {
     const newId = snapsData.length;
     snapsData.push({
         id: newId,
-        title: caption.substring(0, 15),
+        location: location,
+        title: location,
         img: imgSrc,
         user: userName,
         caption: caption
@@ -1269,9 +1271,9 @@ function finalizeAddSnap(event) {
     const newSnapHTML = `
         <div class="snap-item" onclick="openSnap(${newId})">
             <div class="snap-circle">
-                <img src="${imgSrc}" alt="${caption}">
+                <img src="${imgSrc}" alt="${location}">
             </div>
-            <span class="snap-label">${caption.substring(0, 10)}...</span>
+            <span class="snap-label">${location}</span>
         </div>
     `;
     container.insertAdjacentHTML('beforeend', newSnapHTML);

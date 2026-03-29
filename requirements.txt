@@ -27,3 +27,4 @@ jinja2
 markupsafe
 werkzeug
 gunicorn
+Authlib

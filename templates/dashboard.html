@@ -80,19 +80,26 @@
                     <div class="snap-circle">
                         <img src="/static/snaps/munnar.png" alt="Munnar">
                     </div>
-                    <span class="snap-label">Munnar Bliss</span>
+                    <span class="snap-label">Munnar</span>
                 </div>
                 <div class="snap-item" onclick="openSnap(1)">
                     <div class="snap-circle">
-                        <img src="/static/snaps/teagarden.png" alt="Tea Garden">
+                        <img src="/static/snaps/teagarden.png" alt="Thekkady">
                     </div>
-                    <span class="snap-label">Golden Hour</span>
+                    <span class="snap-label">Thekkady</span>
                 </div>
                 <div class="snap-item" onclick="openSnap(2)">
                     <div class="snap-circle">
-                        <img src="/static/snaps/backwaters.png" alt="Backwaters">
+                        <img src="/static/snaps/backwaters.png" alt="Vembanad">
                     </div>
                     <span class="snap-label">Vembanad</span>
+                </div>
+                <!-- Adding Missing Community Snap 4 -->
+                <div class="snap-item" onclick="openSnap(3)">
+                    <div class="snap-circle">
+                        <img src="https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80" alt="Alleppey">
+                    </div>
+                    <span class="snap-label">Alleppey</span>
                 </div>
             </div>
 
@@ -958,6 +965,10 @@
                 <div class="input-group">
                     <label for="snap-upload">Select Memory Image</label>
                     <input type="file" id="snap-upload" accept="image/*" onchange="previewSnapImage(event)" required>
+                </div>
+                <div class="input-group mt-2">
+                    <label for="snap-location">Location</label>
+                    <input type="text" id="snap-location" placeholder="E.g., Munnar, Kerala" required>
                 </div>
                 <div class="input-group mt-2">
                     <label for="snap-caption">Add a Caption</label>

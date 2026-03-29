@@ -9,7 +9,11 @@ from engine import recommendation, mcts_selector, optimizer, planner
 import psycopg2.errors
 
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
+from authlib.integrations.flask_client import OAuth
 app = Flask(__name__)
+# Support for proxy headers (Render uses a proxy)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 # In production, set the SECRET_KEY environment variable. 
 # You can generate one with: python -c 'import os; print(os.urandom(24).hex())'
 app.secret_key = os.environ.get('SECRET_KEY', 'super_secret_temporary_key')
@@ -17,6 +21,19 @@ app.secret_key = os.environ.get('SECRET_KEY', 'super_secret_temporary_key')
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# For local development over HTTP (auto-detect Render environment)
+if not os.environ.get('RENDER'):
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 
 # Initialize DB on startup (ensure tables exist)
 database.init_db()
@@ -154,6 +171,61 @@ def api_logout():
     resp = jsonify({'message': 'Logged out'})
     resp.set_cookie('token', '', expires=0)
     return resp
+
+# --- Google OAuth Routes ---
+@app.route('/api/auth/google/login')
+def google_login():
+    redirect_uri = url_for('google_authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/api/auth/google/callback')
+def google_authorize():
+    try:
+        token = google.authorize_access_token()
+        user_info = token.get('userinfo')
+        if not user_info:
+            # Fallback if userinfo not in token
+            resp = google.get('https://openidconnect.googleapis.com/v1/userinfo')
+            user_info = resp.json()
+        
+        email = user_info['email']
+        google_id = user_info['sub'] # ID in OpenID is 'sub'
+        full_name = user_info.get('name', 'Google Traveler')
+        
+        conn = database.get_db_connection()
+        c = conn.cursor(cursor_factory=database.RealDictCursor)
+        
+        # Check if user exists with this google_id or email
+        c.execute('SELECT * FROM users WHERE google_id = %s OR email = %s', (google_id, email))
+        user = c.fetchone()
+        
+        if not user:
+            # Create user
+            c.execute('INSERT INTO users (full_name, email, password_hash, google_id) VALUES (%s, %s, %s, %s) RETURNING user_id', 
+                      (full_name, email, 'oauth_account_no_password', google_id))
+            user_id = c.fetchone()['user_id']
+            conn.commit()
+        else:
+            user_id = user['user_id']
+            # Link google_id if not already linked
+            if not user.get('google_id'):
+                c.execute('UPDATE users SET google_id = %s WHERE user_id = %s', (google_id, user_id))
+                conn.commit()
+                
+        conn.close()
+        
+        # Generate JWT
+        jwt_token = jwt.encode({
+            'user_id': user_id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }, app.secret_key, algorithm="HS256")
+        
+        response = redirect(url_for('dashboard'))
+        response.set_cookie('token', jwt_token, httponly=True)
+        return response
+    except Exception as e:
+        print(f"Google Auth Error: {str(e)}")
+        return redirect(url_for('login_page', error="Google authentication failed"))
 
 # Main Engine Endpoints
 

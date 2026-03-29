@@ -29,7 +29,8 @@ def init_db():
             bio TEXT DEFAULT '',
             location TEXT DEFAULT '',
             profile_pic TEXT DEFAULT '',
-            cover_pic TEXT DEFAULT ''
+            cover_pic TEXT DEFAULT '',
+            google_id TEXT UNIQUE
         );
 
         CREATE TABLE IF NOT EXISTS trip_experiences (
@@ -69,6 +70,9 @@ def init_db():
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='trip_experiences' AND column_name='emergency_health') THEN
                 ALTER TABLE trip_experiences ADD COLUMN emergency_health TEXT DEFAULT '';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='google_id') THEN
+                ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE;
             END IF;
         END $$;
 
