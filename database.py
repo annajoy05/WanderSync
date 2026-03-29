@@ -120,6 +120,15 @@ def init_db():
             comment_text TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS notes (
+            note_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            color TEXT DEFAULT '#ffeb3b',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     ''')
     
     conn.commit()

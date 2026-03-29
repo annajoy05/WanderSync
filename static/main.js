@@ -83,7 +83,7 @@ function showSection(sectionId) {
     // Handle alias for home-space
     if (sectionId === 'welcome-section') sectionId = 'home-space';
 
-    const sections = ['home-space', 'planner-section', 'experience-section', 'experience-results-section', 'my-trips-section', 'results-section', 'loading-state', 'blog-section', 'calendar-section', 'profile-section'];
+    const sections = ['home-space', 'planner-section', 'experience-section', 'experience-results-section', 'my-trips-section', 'results-section', 'loading-state', 'blog-section', 'calendar-section', 'profile-section', 'notes-section'];
     
     const targetSpace = document.getElementById(sectionId);
     if (!targetSpace) return;
@@ -1343,10 +1343,16 @@ function initScroll3D() {
     handleScroll();
 }
 
-// Ensure 3D scroll is re-initialized when sections change
+// Ensure 3D scroll is re-initialized and features are loaded when sections change
 const originalShowSection = showSection;
 showSection = function(sectionId) {
     originalShowSection(sectionId);
+    
+    // Feature-specific loading logic
+    if (sectionId === 'notes-section') {
+        loadNotes();
+    }
+    
     setTimeout(initScroll3D, 50); // Small delay to let DOM settle
 };
 
@@ -1700,3 +1706,87 @@ async function handleImageUpload(event, type) {
         console.error("Error uploading image:", err);
     }
 }
+// WanderNotes Logic
+// ==========================================
+
+function openNoteModal() {
+    document.getElementById('note-modal').classList.remove('hidden');
+}
+
+function closeNoteModal() {
+    document.getElementById('note-modal').classList.add('hidden');
+    document.getElementById('note-form').reset();
+}
+
+async function loadNotes() {
+    const grid = document.getElementById('notes-grid');
+    try {
+        const res = await fetch('/api/notes');
+        const notes = await res.json();
+        
+        if (notes.length === 0) {
+            grid.innerHTML = '<div class="empty-state">No notes yet. Click "New Note" to start writing!</div>';
+            return;
+        }
+        
+        grid.innerHTML = notes.map(note => `
+            <div class="note-card" style="background: ${note.color}">
+                <div class="note-header">
+                    <h4>${note.title}</h4>
+                    <button class="note-delete" onclick="deleteNote(${note.note_id})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <div class="note-body">
+                    <p>${note.content}</p>
+                </div>
+                <div class="note-footer">
+                    <span>${note.created_at}</span>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (err) {
+        grid.innerHTML = '<div class="error-text">Failed to load notes. Please try again.</div>';
+    }
+}
+
+async function saveNote(event) {
+    event.preventDefault();
+    const title = document.getElementById('note-title').value;
+    const content = document.getElementById('note-content').value;
+    const color = document.querySelector('input[name="note-color"]:checked').value;
+    
+    try {
+        const res = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content, color })
+        });
+        
+        if (res.ok) {
+            closeNoteModal();
+            loadNotes();
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Error saving note');
+        }
+    } catch (err) {
+        alert('Failed to connect to server');
+    }
+}
+
+async function deleteNote(id) {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+    
+    try {
+        const res = await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadNotes();
+        }
+    } catch (err) {
+        alert('Failed to delete note');
+    }
+}
+
+

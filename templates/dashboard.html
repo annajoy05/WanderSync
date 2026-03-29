@@ -47,6 +47,10 @@
                     <span class="sidebar-icon"><i class="fa-solid fa-pen-nib"></i></span>
                     <span class="sidebar-text">Blog Stories</span>
                 </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('notes-section')" id="nav-notes">
+                    <span class="sidebar-icon"><i class="fa-solid fa-note-sticky"></i></span>
+                    <span class="sidebar-text">WanderNotes</span>
+                </a>
             </nav>
             
             <div class="sidebar-footer">
@@ -923,6 +927,58 @@
 
     </main>
 </div>
+
+    <!-- WanderNotes Section -->
+    <section id="notes-section" class="action-space">
+        <div class="section-header-premium">
+            <div class="header-content">
+                <h1 class="gradient-text">WanderNotes</h1>
+                <p>Capture your travel thoughts, bucket lists, and quick reminders.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openNoteModal()">
+                <i class="fa-solid fa-plus"></i> New Note
+            </button>
+        </div>
+
+        <div id="notes-grid" class="notes-grid scroll-3d-element">
+            <!-- Notes will be injected here -->
+            <div class="loading-placeholder">Loading your thoughts...</div>
+        </div>
+    </section>
+
+    <!-- Create Note Modal -->
+    <div id="note-modal" class="dashboard-modal-overlay hidden">
+        <div class="dashboard-modal-card glass-card">
+            <div class="modal-header">
+                <h2>Create New Note</h2>
+                <div class="viewer-close" onclick="closeNoteModal()">&times;</div>
+            </div>
+            <form id="note-form" onsubmit="saveNote(event)">
+                <div class="input-group">
+                    <label for="note-title">Title</label>
+                    <input type="text" id="note-title" placeholder="E.g., Packing List" required>
+                </div>
+                <div class="input-group mt-2">
+                    <label for="note-content">Details</label>
+                    <textarea id="note-content" placeholder="Write your thoughts here..." rows="5" required></textarea>
+                </div>
+                <div class="input-group mt-2">
+                    <label>Pick a Color</label>
+                    <div class="color-picker">
+                        <input type="radio" name="note-color" value="#ffeb3b" id="c1" checked><label for="c1" style="background:#ffeb3b"></label>
+                        <input type="radio" name="note-color" value="#ff8a80" id="c2"><label for="c2" style="background:#ff8a80"></label>
+                        <input type="radio" name="note-color" value="#b9f6ca" id="c3"><label for="c3" style="background:#b9f6ca"></label>
+                        <input type="radio" name="note-color" value="#80d8ff" id="c4"><label for="c4" style="background:#80d8ff"></label>
+                        <input type="radio" name="note-color" value="#ccff90" id="c5"><label for="c5" style="background:#ccff90"></label>
+                    </div>
+                </div>
+                <div class="modal-button-row mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- WanderSnaps Viewer Overlay -->
     <div id="wandersnaps-viewer" class="wandersnaps-viewer hidden">

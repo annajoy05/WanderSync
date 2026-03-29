@@ -172,6 +172,90 @@ def api_logout():
     resp.set_cookie('token', '', expires=0)
     return resp
 
+# --- WanderNotes API Endpoints ---
+
+@app.route('/api/notes', methods=['GET'])
+@token_required
+def get_notes():
+    token = request.cookies.get('token')
+    user_data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+    user_id = user_data['user_id']
+    
+    conn = database.get_db_connection()
+    c = conn.cursor(cursor_factory=database.RealDictCursor)
+    c.execute('SELECT * FROM notes WHERE user_id = %s ORDER BY created_at DESC', (user_id,))
+    notes = c.fetchall()
+    
+    results = []
+    for note in notes:
+        nd = dict(note)
+        if nd['created_at']:
+            nd['created_at'] = nd['created_at'].strftime('%Y-%m-%d %H:%M')
+        results.append(nd)
+        
+    conn.close()
+    return jsonify(results)
+
+@app.route('/api/notes', methods=['POST'])
+@token_required
+def create_note():
+    token = request.cookies.get('token')
+    user_data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+    user_id = user_data['user_id']
+    
+    data = request.json
+    title = data.get('title')
+    content = data.get('content')
+    color = data.get('color', '#ffeb3b')
+    
+    if not title or not content:
+        return jsonify({'message': 'Title and content are required'}), 400
+        
+    conn = database.get_db_connection()
+    c = conn.cursor()
+    try:
+        c.execute('INSERT INTO notes (user_id, title, content, color) VALUES (%s, %s, %s, %s) RETURNING note_id', 
+                  (user_id, title, content, color))
+        note_id = c.fetchone()[0]
+        conn.commit()
+        add_xp_to_user(user_id, 10) # Writing a note
+    except Exception as e:
+        conn.close()
+        return jsonify({'message': str(e)}), 500
+        
+    conn.close()
+    return jsonify({'message': 'Note saved!', 'note_id': note_id}), 201
+
+@app.route('/api/notes/<int:note_id>', methods=['DELETE'])
+@token_required
+def delete_note(note_id):
+    token = request.cookies.get('token')
+    user_data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
+    user_id = user_data['user_id']
+    
+    conn = database.get_db_connection()
+    c = conn.cursor()
+    
+    # Check ownership
+    c.execute('SELECT user_id FROM notes WHERE note_id = %s', (note_id,))
+    note = c.fetchone()
+    if not note:
+        conn.close()
+        return jsonify({'message': 'Note not found'}), 404
+    if note[0] != user_id:
+        conn.close()
+        return jsonify({'message': 'Unauthorized'}), 403
+        
+    try:
+        c.execute('DELETE FROM notes WHERE note_id = %s', (note_id,))
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return jsonify({'message': str(e)}), 500
+        
+    conn.close()
+    return jsonify({'message': 'Note deleted successfully'})
+
 # --- Google OAuth Routes ---
 @app.route('/api/auth/google/login')
 def google_login():

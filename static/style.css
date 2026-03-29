@@ -1714,3 +1714,105 @@ select:focus {
 .switch input:checked + .slider:before {
     transform: translateX(24px);
 }
+
+/* WanderNotes Section */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.note-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.note-card:hover {
+    transform: translateY(-10px) rotate(1deg);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.15);
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.note-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba(0,0,0,0.8);
+}
+
+.note-delete {
+    background: transparent;
+    border: none;
+    color: rgba(0,0,0,0.4);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s;
+    padding: 0.2rem;
+}
+
+.note-delete:hover {
+    color: #f44336;
+}
+
+.note-body p {
+    color: rgba(0,0,0,0.7);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.note-footer {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: rgba(0,0,0,0.4);
+    font-weight: 600;
+}
+
+.color-picker {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.color-picker input {
+    display: none;
+}
+
+.color-picker label {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+}
+
+.color-picker input:checked + label {
+    transform: scale(1.2);
+    border-color: var(--brand-primary);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 5rem 0;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
