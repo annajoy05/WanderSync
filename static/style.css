@@ -1792,65 +1792,103 @@ select:focus {
 }
 
 .note-card {
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    min-height: 200px;
+    padding: 1.8rem;
+    border-radius: var(--radius-lg);
+    min-height: 220px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid rgba(0,0,0,0.05);
+    background: rgba(25, 40, 30, 0.4); /* Glassmorphism base */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
+    cursor: default;
 }
 
 .note-card:hover {
-    transform: translateY(-10px) rotate(1deg);
-    box-shadow: 0 20px 30px rgba(0,0,0,0.15);
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+/* Color accent ring/glow */
+.note-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px; /* Top accent bar */
+    background: var(--accent-color, var(--brand-primary));
+    opacity: 0.8;
 }
 
 .note-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .note-header h4 {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: rgba(0,0,0,0.8);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
 .note-delete {
-    background: transparent;
-    border: none;
-    color: rgba(0,0,0,0.4);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-size: 1rem;
-    transition: color 0.2s;
-    padding: 0.2rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
 
 .note-delete:hover {
-    color: #f44336;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ff5252;
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: scale(1.1);
 }
 
 .note-body p {
-    color: rgba(0,0,0,0.7);
-    font-size: 0.95rem;
-    line-height: 1.5;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
     white-space: pre-wrap;
     margin: 0;
+    opacity: 0.9;
 }
 
 .note-footer {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     font-size: 0.8rem;
-    color: rgba(0,0,0,0.4);
-    font-weight: 600;
+    color: var(--text-disabled);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.note-footer::before {
+    content: '\f017'; /* Clock icon font-awesome */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    opacity: 0.5;
 }
 
 .color-picker {

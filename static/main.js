@@ -1730,11 +1730,11 @@ async function loadNotes() {
         }
         
         grid.innerHTML = notes.map(note => `
-            <div class="note-card" style="background: ${note.color}">
+            <div class="note-card" style="--accent-color: ${note.color}">
                 <div class="note-header">
                     <h4>${note.title}</h4>
-                    <button class="note-delete" onclick="deleteNote(${note.note_id})">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button class="note-delete" onclick="deleteNote(${note.note_id})" title="Delete Note">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
                 <div class="note-body">
