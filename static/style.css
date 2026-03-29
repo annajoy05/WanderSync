@@ -1932,13 +1932,42 @@ select:focus {
 .compass-background {
     position: absolute;
     top: 50%;
-    right: 5%;
+    right: 3%;
     transform: translateY(-50%);
-    width: 350px;
-    height: 350px;
+    width: 260px; /* Reduced from 350px */
+    height: 260px;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.08;
+    opacity: 0.05; /* Slightly lower opacity */
+}
+
+.plane-background {
+    position: absolute;
+    top: 50%;
+    left: 3%;
+    transform: translateY(-50%);
+    width: 220px;
+    height: 220px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+}
+
+.plane-svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--text-secondary);
+    stroke-width: 0.5px;
+    fill: none;
+    animation: floatSlow 60s linear infinite;
+}
+
+@keyframes floatSlow {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(10px, -5px) rotate(2deg); }
+    50% { transform: translate(0, -10px) rotate(0deg); }
+    75% { transform: translate(-10px, -5px) rotate(-2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 .compass-svg {
