@@ -109,8 +109,39 @@
 
             <!-- Welcome Section -->
             <section class="welcome-section glass-card" id="welcome-section">
-                <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Welcome, <span
-                        class="gradient-text">{{ user['full_name'] }}</span>!</h1>
+                <!-- Subtle Compass Background -->
+                <div class="compass-background">
+                    <svg class="compass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Outer Circles -->
+                        <circle cx="50" cy="50" r="48" />
+                        <circle cx="50" cy="50" r="45" opacity="0.4" />
+                        
+                        <!-- Directional Markings -->
+                        <text x="50" y="8" font-size="6" text-anchor="middle" font-family="Outfit" opacity="0.8">N</text>
+                        <text x="92" y="52" font-size="6" text-anchor="middle" font-family="Outfit" opacity="0.8">E</text>
+                        <text x="50" y="96" font-size="6" text-anchor="middle" font-family="Outfit" opacity="0.8">S</text>
+                        <text x="8" y="52" font-size="6" text-anchor="middle" font-family="Outfit" opacity="0.8">W</text>
+                        
+                        <!-- Cross Lines -->
+                        <line x1="50" y1="12" x2="50" y2="88" stroke-dasharray="2,2" />
+                        <line x1="12" y1="50" x2="88" y2="50" stroke-dasharray="2,2" />
+                        
+                        <!-- Center Needle Base -->
+                        <path d="M50 20 L53 50 L50 80 L47 50 Z" />
+                        <path d="M20 50 L50 53 L80 50 L50 47 Z" opacity="0.5" />
+                    </svg>
+                </div>
+
+                <div style="position: relative; z-index: 1;">
+                    <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 0.5rem; display: inline-block;">
+                        <div class="sparkle-container">
+                            <span class="sparkle sparkle-1"></span>
+                            <span class="sparkle sparkle-2"></span>
+                            <span class="sparkle sparkle-3"></span>
+                        </div>
+                        Welcome, <span class="gradient-text">{{ user['full_name'] }}</span>!
+                    </h1>
+                </div>
                 <p class="subtitle" style="margin-bottom: 2rem;">What would you like to do today?</p>
                 
                 <!-- Level & Progress Bar -->
