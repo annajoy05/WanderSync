@@ -109,27 +109,6 @@
 
             <!-- Welcome Section -->
             <section class="welcome-section glass-card" id="welcome-section">
-                <!-- Subtle Plane & Cloud Decor -->
-                <div class="flight-decor">
-                    <!-- Clouds -->
-                    <svg class="cloud-decor cloud-1" viewBox="0 0 100 60" style="position: absolute; width: 80px;">
-                        <path d="M10 40 Q10 20 30 20 Q40 10 60 20 Q80 20 80 40 Q80 50 60 50 Q40 50 30 50 Q10 50 10 40" />
-                    </svg>
-                    <svg class="cloud-decor cloud-2" viewBox="0 0 100 60" style="position: absolute; width: 120px;">
-                        <path d="M10 40 Q10 20 30 20 Q40 10 60 20 Q80 20 80 40 Q80 50 60 50 Q40 50 30 50 Q10 50 10 40" />
-                    </svg>
-                    <svg class="cloud-decor cloud-3" viewBox="0 0 100 60" style="position: absolute; width: 60px;">
-                        <path d="M10 40 Q10 20 30 20 Q40 10 60 20 Q80 20 80 40 Q80 50 60 50 Q40 50 30 50 Q10 50 10 40" />
-                    </svg>
-                    
-                    <!-- Flight Path SVG -->
-                    <svg viewBox="0 0 500 200" style="width: 100%; height: 100%; position: absolute; inset: 0;">
-                        <path id="flight-curve" class="flight-path" d="M -50 150 Q 250 50 550 100" />
-                        <!-- Airplane -->
-                        <path class="airplane-icon" d="M-5 -3 L5 0 L-5 3 L-3 0 Z" />
-                    </svg>
-                </div>
-
                 <!-- Subtle Compass Background -->
                 <div class="compass-background">
                     <svg class="compass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -151,6 +130,24 @@
                         <path d="M50 20 L53 50 L50 80 L47 50 Z" />
                         <path d="M20 50 L50 53 L80 50 L50 47 Z" opacity="0.5" />
                     </svg>
+                </div>
+
+                <!-- Flight Path & Cloud Background -->
+                <div class="flight-path-container">
+                    <!-- Smooth Curved Path -->
+                    <svg width="100%" height="100%" viewBox="0 0 800 300" preserveAspectRatio="none">
+                        <path class="flight-curve" d="M -50 250 C 150 230, 250 100, 450 120 C 650 140, 750 60, 850 30" />
+                        <!-- Airplane at end of visible curve -->
+                        <g class="airplane-icon" transform="translate(685, 75) rotate(-35)">
+                            <path d="M15 0 L18 12 L30 15 L18 18 L15 30 L12 18 L0 15 L12 12 Z" transform="scale(0.8)" />
+                            <path d="M21 15 L0 10 L0 20 Z" /> <!-- Simple plane shape -->
+                        </g>
+                    </svg>
+
+                    <!-- Clouds -->
+                    <svg class="cloud-svg cloud-1" viewBox="0 0 24 24"><path d="M17.5 19c-3.037 0-5.5-2.463-5.5-5.5 0-.066.002-.131.005-.195C10.53 12.583 9 10.469 9 8c0-3.314 2.686-6 6-6s6 2.686 6 6c0 1.554-.593 2.97-1.566 4.037.043.313.066.633.066.963 0 3.037-2.463 5.5-5.5 5.5z"/></svg>
+                    <svg class="cloud-svg cloud-2" viewBox="0 0 24 24"><path d="M19 18c-2.761 0-5-2.239-5-5 0-.087.002-.174.007-.26C12.449 12.016 11 10.174 11 8c0-3.314 2.686-6 6-6s6 2.686 6 6c0 1.63-.647 3.109-1.698 4.19.452.483.698 1.127.698 1.81 0 2.761-2.239 5-5 5z"/></svg>
+                    <svg class="cloud-svg cloud-3" viewBox="0 0 24 24"><path d="M17.5 19c-3.037 0-5.5-2.463-5.5-5.5 0-.066.002-.131.005-.195C10.53 12.583 9 10.469 9 8c0-3.314 2.686-6 6-6s6 2.686 6 6c0 1.554-.593 2.97-1.566 4.037.043.313.066.633.066.963 0 3.037-2.463 5.5-5.5 5.5z"/></svg>
                 </div>
 
                 <div style="position: relative; z-index: 1;">
