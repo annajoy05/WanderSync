@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WanderSync{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Load Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    {% block head_extras %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <nav class="navbar {% block nav_class %}{% endblock %}">
+        <a href="/home" class="nav-branding">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="WanderSync Logo" class="nav-logo">
+            <div class="logo">WanderSync</div>
+        </a>
+        <div class="nav-actions">
+            {% block nav_actions %}
+                {% if user %}
+                    <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+                    <button onclick="logout()" class="btn btn-primary" style="margin-left: 0.5rem;">Logout</button>
+                {% else %}
+                    <a href="/login" class="btn btn-secondary">Log In</a>
+                    <a href="/login" class="btn btn-primary" style="margin-left: 0.5rem;">Start Planning</a>
+                {% endif %}
+            {% endblock %}
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

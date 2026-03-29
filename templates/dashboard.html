@@ -1,0 +1,978 @@
+{% extends 'base.html' %}
+
+{% block title %}WanderSync Dashboard{% endblock %}
+
+{% block head_extras %}
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endblock %}
+
+{% block body_class %}dashboard-body{% endblock %}
+{% block nav_class %}dashboard-nav{% endblock %}
+
+{% block nav_actions %}
+    <!-- Empty top bar actions, everything is in the sidebar now -->
+{% endblock %}
+
+
+{% block content %}
+    <div class="dashboard-layout">
+        <!-- Dashboard Sidebar -->
+        <aside class="dashboard-sidebar glass-card">
+            <div class="sidebar-branding">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="WanderSync Logo" class="sidebar-logo">
+                <div class="sidebar-title">WanderSync</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="javascript:void(0)" class="sidebar-link active" onclick="showSection('home-space')" id="nav-home">
+                    <span class="sidebar-icon"><i class="fa-solid fa-house-chimney"></i></span>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('profile-section')" id="nav-profile">
+                    <span class="sidebar-icon"><i class="fa-solid fa-user-gear"></i></span>
+                    <span class="sidebar-text">My Profile</span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('my-trips-section')" id="nav-trips">
+                    <span class="sidebar-icon"><i class="fa-solid fa-plane-departure"></i></span>
+                    <span class="sidebar-text">My Trips</span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('calendar-section')" id="nav-calendar">
+                    <span class="sidebar-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                    <span class="sidebar-text">My Calendar</span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('blog-section')" id="nav-blog">
+                    <span class="sidebar-icon"><i class="fa-solid fa-pen-nib"></i></span>
+                    <span class="sidebar-text">Blog Stories</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="javascript:void(0)" class="sidebar-link" onclick="showSection('settings-section')" id="nav-settings">
+                    <span class="sidebar-icon"><i class="fa-solid fa-gear"></i></span>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+                <button onclick="logout()" class="sidebar-link logout-btn">
+                    <span class="sidebar-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                    <span class="sidebar-text">Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-container">
+
+
+        <!-- Welcome Section -->
+        <!-- HOME SPACE: Includes Snaps, Welcome, and Action Grid -->
+        <section id="home-space" class="action-space active-space">
+            <!-- WanderSnaps Section (Standalone above Welcome Card) -->
+            <div class="wandersnaps-container" id="wandersnaps-container" style="margin-bottom: 2rem;">
+                <!-- Add Snap Button -->
+                <div class="snap-item" onclick="triggerAddSnap()">
+                    <div class="snap-circle snap-add-btn">+</div>
+                    <span class="snap-label">Add Snap</span>
+                </div>
+                
+                <!-- Mock Snaps -->
+                <div class="snap-item" onclick="openSnap(0)">
+                    <div class="snap-circle">
+                        <img src="/static/snaps/munnar.png" alt="Munnar">
+                    </div>
+                    <span class="snap-label">Munnar Bliss</span>
+                </div>
+                <div class="snap-item" onclick="openSnap(1)">
+                    <div class="snap-circle">
+                        <img src="/static/snaps/teagarden.png" alt="Tea Garden">
+                    </div>
+                    <span class="snap-label">Golden Hour</span>
+                </div>
+                <div class="snap-item" onclick="openSnap(2)">
+                    <div class="snap-circle">
+                        <img src="/static/snaps/backwaters.png" alt="Backwaters">
+                    </div>
+                    <span class="snap-label">Vembanad</span>
+                </div>
+            </div>
+
+            <!-- Welcome Section -->
+            <section class="welcome-section glass-card" id="welcome-section">
+                <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Welcome, <span
+                        class="gradient-text">{{ user['full_name'] }}</span>!</h1>
+                <p class="subtitle" style="margin-bottom: 2rem;">What would you like to do today?</p>
+                
+                <!-- Level & Progress Bar -->
+                <div id="user-gamification-info" class="user-progress-container mt-2" style="max-width: 500px; margin: 0 auto; opacity: 0; transition: opacity 0.5s ease;">
+                    <div class="level-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.6rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span id="user-level-badge" class="badge-premium" style="background: linear-gradient(135deg, var(--brand-primary), var(--accent-green)); padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; color: white; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);">Level 1: Novice</span>
+                        </div>
+                        <span id="user-xp-text" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">0 / 100 XP</span>
+                    </div>
+                    <div class="progress-bar-bg" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle); position: relative;">
+                        <div id="user-xp-fill" class="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--brand-primary), var(--accent-green)); box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); transition: width 1s cubic-bezier(0.19, 1, 0.22, 1);"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="action-grid scroll-3d-element">
+                <div class="glass-card action-card premium-card" onclick="showSection('planner-section')">
+                    <div class="card-icon" style="color: var(--brand-primary);"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="card-info">
+                        <h3>Plan New Trip</h3>
+                        <p>Tell us where you're going and what your constraints are to build a custom itinerary.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card action-card premium-card" onclick="showSection('experience-section')">
+                    <div class="card-icon" style="color: var(--accent-green);"><i class="fa-solid fa-pen-to-square"></i></div>
+                    <div class="card-info">
+                        <h3>Register Past Trip</h3>
+                        <p>Log your personal travel data to build the community database and help others.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card action-card premium-card" onclick="showSection('calendar-section')">
+                    <div class="card-icon" style="color: var(--accent-yellow);"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="card-info">
+                        <h3>My Calendar</h3>
+                        <p>Organize your travel schedule, add events, and manage your journey timeline.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card action-card premium-card" onclick="showSection('blog-section')">
+                    <div class="card-icon">📖</div>
+                    <div class="card-info">
+                        <h3>Share Blog</h3>
+                        <p>Write an engaging story about your travel experiences for the WanderSync community.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card action-card premium-card" onclick="showSection('my-trips-section')">
+                    <div class="card-icon" style="color: var(--brand-primary);"><i class="fa-solid fa-plane-up"></i></div>
+                    <div class="card-info">
+                        <h3>View My Trips</h3>
+                        <p>Review your previously generated and saved itineraries all in one place.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card action-card premium-card danger-card" onclick="logout()">
+                    <div class="card-icon" style="color: var(--accent-red);"><i class="fa-solid fa-right-from-bracket"></i></div>
+                    <div class="card-info">
+                        <h3>Logout</h3>
+                        <p>Sign out of your session securely from this device.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements Gallery -->
+            <div id="achievements-section" class="mt-4 scroll-3d-element" style="opacity: 0; transition: opacity 0.8s ease;">
+                <h3 class="section-title-sm" style="text-align: center; margin-bottom: 1.5rem; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; color: var(--text-secondary);">Travel Achievements</h3>
+                <div id="achievements-container" style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; padding: 1rem;">
+                    <!-- Achievement items will be injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE SPACE -->
+        <section id="profile-section" class="action-space inactive-space">
+            <div class="profile-container" style="max-width: 1000px; margin: 0 auto; padding: 2rem 1rem;">
+                <!-- LinkedIn-style Profile Header -->
+                <div class="profile-card glass-card scroll-3d-element" style="padding: 0; overflow: hidden; border-radius: 12px; position: relative;">
+                    <div class="cover-photo-container" style="height: 200px; background: #2d3436; position: relative; cursor: pointer;" onclick="document.getElementById('cover-upload').click()">
+                        <img id="profile-cover-img" src="https://images.unsplash.com/photo-1503260444933-9c3b0521f4d2?q=80&w=1470&auto=format&fit=crop" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;" alt="Cover Photo">
+                        <div class="photo-edit-overlay" style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.5); padding: 0.5rem; border-radius: 50%; color: var(--text-primary);"><i class="fas fa-camera"></i></div>
+                        <input type="file" id="cover-upload" class="hidden" accept="image/*" onchange="handleImageUpload(event, 'cover')">
+                    </div>
+                    
+                    <div class="profile-main-info" style="padding: 0 2.5rem 2.5rem; position: relative; margin-top: -60px; display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem;">
+                        <div style="display: flex; align-items: flex-end; gap: 2rem;">
+                            <div class="profile-pic-container" style="width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--bg-surface); background: var(--bg-elevated); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; cursor: pointer;" onclick="document.getElementById('profile-upload').click()">
+                                <img id="profile-pic-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=traveler" style="width: 100%; height: 100%; object-fit: cover;" alt="Profile Picture">
+                                <div class="photo-edit-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; color: var(--text-primary);"><i class="fas fa-camera"></i></div>
+                                <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="handleImageUpload(event, 'profile')">
+                            </div>
+                            
+                            <div class="profile-summary" style="padding-bottom: 0.75rem;">
+                                <h1 id="profile-name" style="font-size: 2.2rem; margin-bottom: 0.4rem; letter-spacing: -0.02em;">{{ user['full_name'] }}</h1>
+                                <p id="profile-headline" style="color: var(--brand-primary); font-weight: 500; font-size: 1.1rem; margin-bottom: 0.6rem; opacity: 0.9;">Adventurous Explorer | WanderSync Pro</p>
+                                <p id="profile-location" style="color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-map-marker-alt"></i><span id="profile-loc-text">Global Citizen</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-actions" style="padding-bottom: 1.5rem;">
+                            <button class="btn btn-outline-glass btn-premium" onclick="openProfileEdit()" style="padding: 0.75rem 2rem; border-radius: 30px; font-weight: 600;">
+                                <i class="fa-solid fa-user-pen" style="margin-right: 0.5rem;"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-grid mt-4 scroll-3d-element" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <div class="profile-main-col">
+                        <!-- About Section -->
+                        <div class="glass-card about-card" style="padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 12px;">
+                            <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">About</h3>
+                            <p id="profile-bio" style="line-height: 1.6; color: var(--text-secondary); font-size: 0.95rem;">No bio added yet. Share your travel philosophy with the community!</p>
+                        </div>
+
+                        <!-- Stats Section -->
+                        <div class="glass-card stats-card" style="padding: 1.5rem; border-radius: 12px;">
+                            <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">Travel Insights</h3>
+                            <div class="stats-row" style="display: flex; justify-content: space-around; padding: 1rem 0;">
+                                <div class="stat-item" style="text-align: center;">
+                                    <span id="stat-trips" style="display: block; font-size: 2rem; font-weight: 800; color: var(--accent-green);">0</span>
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Trips</span>
+                                </div>
+                                <div class="stat-item" style="text-align: center;">
+                                    <span id="stat-points" style="display: block; font-size: 2rem; font-weight: 800; color: var(--accent-green);">0</span>
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Exp Points</span>
+                                </div>
+                                <div class="stat-item" style="text-align: center;">
+                                    <span id="stat-level" style="display: block; font-size: 2rem; font-weight: 800; color: var(--accent-green);">0</span>
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Level</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-side-col">
+                        <div class="glass-card milestones-card" style="padding: 1.5rem; height: 100%; border-radius: 12px;">
+                            <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">Milestones</h3>
+                            <div id="profile-achievements-list" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+                                <!-- Achievement icons -->
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; width: 100%; padding: 2rem 0;">Keep traveling to unlock more achievements!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Edit Modal -->
+        <div id="profile-edit-modal" class="dashboard-modal-overlay hidden">
+            <div class="dashboard-modal-card glass-card">
+                <h2>Edit Profile</h2>
+                <div class="input-group">
+                    <label>Headline</label>
+                    <input type="text" id="edit-headline" placeholder="e.g. World Explorer | Photography Buff">
+                </div>
+                <div class="input-group mt-2">
+                    <label>Location</label>
+                    <input type="text" id="edit-location" placeholder="e.g. Cochin, Kerala">
+                </div>
+                <div class="input-group mt-2">
+                    <label>Bio</label>
+                    <textarea id="edit-bio" placeholder="Tell us about yourself..."></textarea>
+                </div>
+                <div class="input-group mt-2">
+                    <label>Accessibility Needs / Disabilities</label>
+                    <textarea id="edit-disability" placeholder="e.g. Wheelchair access, sensory-friendly environments, etc."></textarea>
+                </div>
+                <div class="modal-button-row">
+                    <button class="btn btn-secondary" onclick="toggleModal('profile-edit-modal', false)">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveProfileChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Planner Section -->
+        <section class="planner-section action-space inactive-space" id="planner-section">
+            <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+            <h2>Plan a New Trip</h2>
+            <p class="subtitle">Tell us where you're going and what your constraints are.</p>
+
+            <form id="generate-form" onsubmit="generateItinerary(event)">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="origin">Where are you travelling from?</label>
+                        <input type="text" id="origin" required placeholder="e.g. Cochin, Kerala">
+                    </div>
+                    <div class="input-group">
+                        <label for="destination">Where are you going?</label>
+                        <input type="text" id="destination" required placeholder="e.g. Munnar, Kerala">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="arrival_date">Approximate Arrival Date</label>
+                        <input type="date" id="arrival_date" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="duration">Trip Duration (Days)</label>
+                        <input type="number" id="duration" required min="1" max="14" value="5">
+                    </div>
+                    <div class="input-group">
+                        <label for="age">Your Age</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="range" id="age" min="15" max="90" value="30" step="1"
+                                oninput="this.nextElementSibling.value = this.value">
+                            <output style="font-weight: 600; color: var(--brand-primary); min-width: 25px;">30</output>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="budget">Total Budget (₹)</label>
+                        <input type="number" id="budget" required min="1000" value="5000">
+                    </div>
+                    <div class="input-group">
+                        <label for="transport">Preferred Transport</label>
+                        <select id="transport" required>
+                            <option value="bus">Bus</option>
+                            <option value="train">Train</option>
+                            <option value="car" selected>Car / Taxi</option>
+                            <option value="flight">Flight</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="style">Travel Style</label>
+                        <select id="style" required>
+                            <option value="relaxed">Relaxed</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="intensive">Intensive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <span class="section-title-sm">Select Your Interests</span>
+                    <div class="checkbox-group" id="interests-group">
+                        <label class="checkbox-item"><input type="checkbox" name="interest" value="Museums">
+                            Museums</label>
+                        <label class="checkbox-item"><input type="checkbox" name="interest" value="Outdoor Adventures">
+                            Outdoor Adventures</label>
+                        <label class="checkbox-item"><input type="checkbox" name="interest" value="Shopping">
+                            Shopping</label>
+                        <label class="checkbox-item"><input type="checkbox" name="interest"
+                                value="Children's Entertainment"> Children's Ent.</label>
+                        <label class="checkbox-item"><input type="checkbox" name="interest"
+                                value="Off the beat activities"> Off the beat</label>
+                        <label class="checkbox-item"><input type="checkbox" name="interest" value="Night Life"> Night
+                            Life</label>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <span class="section-title-sm">Cuisine Preferences</span>
+                    <div class="checkbox-group" id="cuisine-group">
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Ethnic">
+                            Ethnic</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="American">
+                            American</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Italian">
+                            Italian</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Mexican">
+                            Mexican</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Chinese">
+                            Chinese</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Indian" checked>
+                            Indian</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cuisine" value="Vegan"> Vegan</label>
+                    </div>
+                </div>
+
+                <div class="form-row mt-2" style="justify-content: flex-start; gap: 2rem;">
+                    <label class="checkbox-item" style="font-size: 1rem; color: var(--text-primary);">
+                        <input type="checkbox" id="has_children"> Children travelling with you?
+                    </label>
+                    <label class="checkbox-item" style="font-size: 1rem; color: var(--text-primary);">
+                        <input type="checkbox" id="need_guides" onchange="document.getElementById('guide_detail_container').classList.toggle('hidden', !this.checked)"> Need guide contacts?
+                    </label>
+                    <label class="checkbox-item" style="font-size: 1rem; color: var(--text-primary);">
+                        <input type="checkbox" id="need_emergency"> Need emergency contacts?
+                    </label>
+                    <label class="checkbox-item" style="font-size: 1rem; color: var(--text-primary);">
+                        <input type="checkbox" id="has_disabilities" onchange="document.getElementById('disability_detail_container').classList.toggle('hidden', !this.checked)"> Any accessibility needs?
+                    </label>
+                </div>
+
+                <div id="disability_detail_container" class="mt-2 hidden">
+                    <div class="input-group">
+                        <label for="disability_info">Accessibility Details (Optional)</label>
+                        <textarea id="disability_info" placeholder="e.g. Wheelchair access needed, avoid steep slopes..."></textarea>
+                    </div>
+                </div>
+
+                <div id="guide_detail_container" class="mt-2 hidden">
+                    <div class="input-group">
+                        <label for="guide_preferences">Guide Preferences (Optional)</label>
+                        <textarea id="guide_preferences" placeholder="e.g. Female guide preferred, Spanish translator needed, etc."></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full generate-btn mt-4" id="generate-btn">
+                    <span class="btn-text">Generate AI Itinerary</span>
+                    <div class="loader-spinner hidden" id="generate-loader"></div>
+                </button>
+            </form>
+        </section>
+
+        <!-- Loading State View -->
+        <section class="loading-state hidden" id="loading-state">
+            <div class="pulse-ring"></div>
+            <h3>Generating Community Plan</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Our system is analyzing community data for the
+                best experience...</p>
+            <ul class="loading-steps">
+                <li class="active">Personalized Activity Planner Researching...</li>
+                <li>Restaurant Scout finding scenic dots...</li>
+                <li>Interest Scout tailoring to your profile...</li>
+                <li>Itinerary Compiler composing final document...</li>
+            </ul>
+        </section>
+
+        <!-- Itinerary Results View -->
+        <section class="results-section hidden" id="results-section">
+            <button class="btn btn-secondary mb-4" onclick="showSection('planner-section')" style="border-radius: 20px; padding: 0.5rem 1.25rem;">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Planner
+            </button>
+            <div class="results-header">
+                <h2>Your Community-Driven Journey</h2>
+                <div class="budget-badge">
+                    <span class="label">Estimated Total</span>
+                    <span class="value" id="result-cost">₹0</span>
+                </div>
+            </div>
+
+            <div id="intercity-info-box" class="glass-card mockup-card mb-4 hidden"
+                style="border-left: 4px solid var(--brand-primary);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span
+                            style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Recommended
+                            Travel to Destination</span>
+                        <h3 id="result-intercity-method" style="margin: 0.25rem 0;">Travel via Flight</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 1.25rem; font-weight: 800; color: var(--brand-primary);"
+                            id="result-intercity-cost">₹4,500</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">average cost</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stay-info-box" class="glass-card mockup-card mb-4 hidden"
+                style="border-left: 4px solid var(--accent-yellow);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span
+                            style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Recommended
+                            Stay</span>
+                        <h3 id="result-stay-name" style="margin: 0.25rem 0;">Grand Palace Hotel</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 1.25rem; font-weight: 800; color: var(--brand-primary);"
+                            id="result-stay-price">₹2,500</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">per night</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="itinerary-map" style="height: 350px; width: 100%; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-subtle); display: none;"></div>
+
+            <div id="itinerary-map" style="height: 350px; width: 100%; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-subtle); display: none;"></div>
+
+            <div class="timeline" id="itinerary-timeline">
+                <!-- Javascript will inject the timeline nodes here -->
+            </div>
+
+            <div class="community-feedback glass-card mockup-card mt-4" style="max-width: 100%;">
+                <h3>Trip Completed?</h3>
+                <p>Contribute back to the community by logging your experience.</p>
+                <button class="btn btn-secondary mt-2" onclick="showSection('experience-section')">Log My
+                    Journey</button>
+            </div>
+
+        </section>
+
+        <!-- Past Trip Experience Section -->
+        <section class="experience-section action-space inactive-space" id="experience-section">
+            <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+            <h2>Register Past Trip Experience</h2>
+            <p class="subtitle">Log your personal travel data to build the community database.</p>
+
+            <form id="experience-form" onsubmit="handleExperienceSubmit(event)">
+
+                <!-- 1. Trip Information -->
+                <div class="glass-card mockup-card"
+                    style="max-width: 100%; margin-bottom: 2rem; transform: none; box-shadow: none;">
+                    <h3>1. Trip Information</h3>
+                    <div class="form-row mt-2">
+                        <div class="input-group">
+                            <label for="exp_origin">Origin City</label>
+                            <input type="text" id="exp_origin" required placeholder="e.g. Cochin">
+                        </div>
+                        <div class="input-group">
+                            <label for="exp_dest">Main Destination</label>
+                            <input type="text" id="exp_dest" required placeholder="e.g. Munnar">
+                        </div>
+                        <div class="input-group">
+                            <label for="exp_date">Trip Start Date</label>
+                            <input type="date" id="exp_date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="exp_age">Traveler Age at Trip</label>
+                            <input type="number" id="exp_age" min="15" max="90" value="30">
+                        </div>
+                        <div class="input-group">
+                            <label for="exp_companion">Companion Type</label>
+                            <select id="exp_companion">
+                                <option value="solo">Solo</option>
+                                <option value="friends">Friends</option>
+                                <option value="family" selected>Family</option>
+                                <option value="couple">Couple</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="exp_duration">Trip Duration (Days)</label>
+                            <input type="number" id="exp_duration" min="1" max="14" value="5">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="exp_transport">Main Transport</label>
+                            <select id="exp_transport">
+                                <option value="bus">Bus</option>
+                                <option value="train">Train</option>
+                                <option value="car" selected>Car / Taxi</option>
+                                <option value="flight">Flight</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="exp_style">Travel Style</label>
+                            <select id="exp_style">
+                                <option value="relaxed">Relaxed</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="intensive">Intensive</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="padding-top: 25px;">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="exp_has_children"> Children were present?
+                            </label>
+                        </div>
+                        <div class="input-group" style="padding-top: 25px;">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="exp_has_guides" onchange="toggleGuideFields()"> Guides were present?
+                            </label>
+                        </div>
+                        <div class="input-group" style="padding-top: 25px;">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="exp_has_emergency" onchange="toggleEmergencyFields()"> Emergency services present?
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Guide Details (Initially Hidden) -->
+                    <div id="guide-details-section" class="hidden" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px dashed var(--border-subtle);">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="exp_guide_name">Guide Name</label>
+                                <input type="text" id="exp_guide_name" placeholder="e.g. Anandhu K.">
+                            </div>
+                            <div class="input-group">
+                                <label for="exp_guide_phone">Guide Phone Number</label>
+                                <input type="text" id="exp_guide_phone" placeholder="e.g. +91 94470 12345">
+                            </div>
+                            <div class="input-group">
+                                <label for="exp_guide_specialty">Guide Specialty</label>
+                                <input type="text" id="exp_guide_specialty" placeholder="e.g. Trekking expert">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Details (Initially Hidden) -->
+                    <div id="emergency-details-section" class="hidden" style="margin-top: 1rem; padding: 1rem; background: rgba(255,100,100,0.03); border-radius: 8px; border: 1px dashed rgba(255,100,100,0.2);">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="exp_emergency_ambulance">Ambulance Number</label>
+                                <input type="text" id="exp_emergency_ambulance" placeholder="e.g. 102 or local number">
+                            </div>
+                            <div class="input-group">
+                                <label for="exp_emergency_police">Police Station Number</label>
+                                <input type="text" id="exp_emergency_police" placeholder="e.g. 100 or local number">
+                            </div>
+                            <div class="input-group">
+                                <label for="exp_emergency_health">Healthcare/Hospital</label>
+                                <input type="text" id="exp_emergency_health" placeholder="e.g. 104 or local hospital">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="section-title-sm">Select Your Interests</span>
+                        <div class="checkbox-group" id="exp-interests-group">
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest" value="Museums">
+                                Museums</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest"
+                                    value="Outdoor Adventures"> Outdoor Adventures</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest" value="Shopping">
+                                Shopping</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest"
+                                    value="Children's Entertainment"> Children's Ent.</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest"
+                                    value="Off the beat activities"> Off the beat</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_interest" value="Night Life">
+                                Night Life</label>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <span class="section-title-sm">Cuisine Preferences</span>
+                        <div class="checkbox-group" id="exp-cuisine-group">
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Ethnic">
+                                Ethnic</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="American">
+                                American</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Italian">
+                                Italian</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Mexican">
+                                Mexican</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Chinese">
+                                Chinese</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Indian"
+                                    checked> Indian</label>
+                            <label class="checkbox-item"><input type="checkbox" name="exp_cuisine" value="Vegan">
+                                Vegan</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="exp_accessibility_notes">Accessibility Review (Optional)</label>
+                            <textarea id="exp_accessibility_notes" placeholder="e.g. Wheelchair friendly route, good signage, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                    <div class="input-group">
+                        <label for="exp_stay_name">Stay Name (Optional)</label>
+                        <input type="text" id="exp_stay_name" placeholder="e.g. Green Valley Hotel">
+                    </div>
+                    <div class="input-group">
+                        <label for="exp_stay_price">Stay Price (Total ₹)</label>
+                        <input type="number" id="exp_stay_price" placeholder="e.g. 1500" value="0"
+                            oninput="calculateTotalExpense()">
+                    </div>
+                    <div class="input-group">
+                        <label for="exp_stay_rating">Stay Rating (1-5)</label>
+                        <input type="number" id="exp_stay_rating" min="1" max="5" step="0.1" placeholder="e.g. 4.5">
+                    </div>
+                </div>
+            </div> <!-- Closes General Info mockup-card (479) -->
+
+            <!-- 2. Places Visited (Dynamic Container) -->
+                <h3>2. Places Visited</h3>
+                <p class="subtitle">Log your path in chronological order. Tell us how you traveled between them.</p>
+
+                <div id="places-container">
+                    <!-- Javascript will inject the initial Place 1 node here -->
+                </div>
+
+                <div style="text-align: center; margin: 1.5rem 0;">
+                    <button type="button" class="btn btn-secondary" onclick="addNextPlace()">+ Add Next Place</button>
+                </div>
+
+                <!-- 4. Expense Calculation -->
+                <div class="glass-card mockup-card"
+                    style="max-width: 100%; margin-bottom: 2rem; transform: none; box-shadow: none; display: flex; justify-content: space-between; align-items: center; border-color: var(--brand-primary);">
+                    <div>
+                        <h3>Trip Calculation</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Auto-updating based on your entries.
+                        </p>
+                    </div>
+                    <div class="budget-badge" style="background: transparent; border: none;">
+                        <span class="label">Total Expense</span>
+                        <span class="value" id="calc-expense-display" style="font-size: 2rem;">₹0</span>
+                    </div>
+                </div>
+
+                <!-- 5. Final Submission -->
+                <button type="submit" class="btn btn-primary btn-full generate-btn" id="exp-submit-btn">
+                    <span class="btn-text">Submit Trip</span>
+                    <div class="loader-spinner hidden" id="exp-loader"></div>
+                </button>
+            </form>
+        </section>
+
+        <!-- Experience Results View -->
+        <section class="experience-results-section hidden" id="experience-results-section" style="padding: 2.5rem;">
+            <div class="results-header">
+                <h2 id="exp-result-dest">Your Submitted Trip</h2>
+                <div class="budget-badge">
+                    <span class="label">Total Trip Expense</span>
+                    <span class="value" id="exp-result-cost">₹0</span>
+                </div>
+            </div>
+
+            <div class="timeline" id="experience-timeline">
+                <!-- Javascript will inject the timeline nodes here -->
+            </div>
+
+            <button class="btn btn-secondary mt-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+        </section>
+
+        <!-- My Trips Section -->
+        <section class="my-trips-section action-space inactive-space" id="my-trips-section">
+            <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+            <h2>My Trips</h2>
+            <p class="subtitle">View your previously generated and saved itineraries.</p>
+            <div id="past-trips-list">
+                <p style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">No past trips found.</p>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section class="blog-section action-space inactive-space" id="blog-section" style="padding: 2.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                <div>
+                    <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+                    <h2 style="margin: 0;">Community Stories</h2>
+                    <p class="subtitle" style="margin: 0.5rem 0 0 0;">Read and share travel experiences with fellow wanderers.</p>
+                </div>
+                <button class="btn btn-primary" onclick="toggleBlogForm()">Share a Story</button>
+            </div>
+
+            <!-- Create Blog Form (Initially Hidden) -->
+            <div id="create-blog-container" class="glass-card hidden mb-4" style="padding: 2rem; border: 1px solid var(--brand-primary); background: rgba(76, 175, 80, 0.05);">
+                <h3 style="margin-bottom: 1.5rem;">Share Your Journey</h3>
+                <form id="create-blog-form" onsubmit="submitBlog(event)">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Story Title</label>
+                            <input type="text" name="title" required placeholder="e.g. My Secret Spot in Munnar">
+                        </div>
+                        <div class="input-group">
+                            <label>Category</label>
+                            <select name="category">
+                                <option value="Adventure">Adventure</option>
+                                <option value="Relaxation">Relaxation</option>
+                                <option value="Food">Food</option>
+                                <option value="Culture">Culture</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group mt-2">
+                        <label>Story Content</label>
+                        <textarea name="content" required placeholder="Tell your story..." style="width: 100%; min-height: 150px; background: rgba(255,255,255,0.05); color: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-subtle);"></textarea>
+                    </div>
+                    <div class="input-group mt-2">
+                        <label>Add Images (Optional)</label>
+                        <input type="file" name="images" multiple accept="image/*" style="padding: 0.5rem 0;">
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" id="blog-submit-btn">Publish Post</button>
+                        <button type="button" class="btn btn-secondary" onclick="toggleBlogForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Blog Search & Filter -->
+            <div class="blog-controls glass-card mb-4" style="padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; background: rgba(255,255,255,0.02);">
+                <div class="input-group" style="flex: 1; min-width: 250px;">
+                    <label>Search Stories</label>
+                    <input type="text" id="blog-search" placeholder="Search by title or content..." oninput="filterBlogs()">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="blog-category-filter" onchange="filterBlogs()">
+                        <option value="All">All Categories</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="Relaxation">Relaxation</option>
+                        <option value="Food">Food</option>
+                        <option value="Culture">Culture</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="blog-feed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem;">
+                <!-- Blogs will be injected here via JS -->
+            </div>
+        </section>
+
+        <!-- My Calendar Section -->
+        <section class="calendar-section action-space inactive-space" id="calendar-section" style="padding: 2.5rem;">
+            <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <h2>My Calendar</h2>
+                    <p class="subtitle">Organize your journeys and stay on track with your travel schedule.</p>
+                </div>
+                <div class="calendar-controls" style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-secondary" onclick="changeMonth(-1)">←</button>
+                    <h3 id="current-month-year" style="min-width: 150px; text-align: center; margin: 0;">March 2026</h3>
+                    <button class="btn btn-secondary" onclick="changeMonth(1)">→</button>
+                </div>
+            </div>
+
+            <div class="calendar-container glass-card" style="padding: 1.5rem; background: rgba(0,0,0,0.2);">
+                <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                    <!-- Days will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Event Modal (Dynamic) -->
+            <div id="event-modal" class="glass-card mockup-card hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 90%; max-width: 400px; padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 id="modal-date-title">Add Event</h3>
+                    <button class="viewer-close" onclick="closeEventModal()">&times;</button>
+                </div>
+                <div id="event-list-container" class="mb-4">
+                    <!-- Existing events for the day will be shown here -->
+                </div>
+                <form onsubmit="saveCalendarEvent(event)">
+                    <div class="input-group">
+                        <label>Event Name</label>
+                        <input type="text" id="event-text" required placeholder="e.g. Visit Backwaters">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Save Event</button>
+                </form>
+            </div>
+            <div id="event-modal-overlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(4px);" onclick="closeEventModal()"></div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="settings-section action-space inactive-space" id="settings-section" style="padding: 2.5rem; max-width: 900px; margin: 0 auto;">
+            <button class="btn btn-secondary mb-4" onclick="showSection('home-space')">← Back to Dashboard</button>
+            <h2 style="margin-bottom: 0.5rem;">Settings</h2>
+            <p class="subtitle" style="margin-bottom: 3rem;">Manage your account preferences and application settings.</p>
+
+            <div class="settings-grid" style="display: grid; gap: 1.5rem;">
+                <!-- Account Settings -->
+                <div class="glass-card" style="padding: 2rem; border-radius: 12px;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+                        <i class="fa-solid fa-user-gear" style="font-size: 1.5rem; color: var(--brand-primary);"></i>
+                        <h3 style="margin: 0;">Account Preferences</h3>
+                    </div>
+                    
+                    <div class="settings-list" style="display: grid; gap: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0 0 0.25rem 0;">Privacy Mode</h4>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Only followers can see your travel blogs and snaps.</p>
+                            </div>
+                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0 0 0.25rem 0;">Email Notifications</h4>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Receive updates about new community blogs and likes.</p>
+                            </div>
+                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--brand-primary); transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appearance -->
+                <div class="glass-card" style="padding: 2rem; border-radius: 12px;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+                        <i class="fa-solid fa-palette" style="font-size: 1.5rem; color: var(--brand-primary);"></i>
+                        <h3 style="margin: 0;">Appearance</h3>
+                    </div>
+                    
+                    <div class="settings-list" style="display: grid; gap: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0 0 0.25rem 0;">3D Antigravity Effects</h4>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">High-performance 3D transitions between sections.</p>
+                            </div>
+                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--brand-primary); transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="glass-card" style="padding: 2rem; border-radius: 12px; border-color: rgba(239, 68, 68, 0.2);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; color: var(--accent-red);"></i>
+                        <h3 style="margin: 0; color: var(--accent-red);">Danger Zone</h3>
+                    </div>
+                    <button class="btn btn-secondary" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3);">Deactivate Account</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+    <!-- WanderSnaps Viewer Overlay -->
+    <div id="wandersnaps-viewer" class="wandersnaps-viewer hidden">
+        <div class="viewer-header">
+            <div class="progress-bars" id="viewer-progress-bars">
+                <!-- Progress bars injected via JS -->
+            </div>
+            <div class="viewer-user-info">
+                <img src="/static/logo.png" class="viewer-user-img" alt="User">
+                <div class="viewer-user-name" id="viewer-user-name">WanderSync Community</div>
+                <div class="viewer-close" onclick="closeSnap()">&times;</div>
+            </div>
+        </div>
+        
+        <div class="viewer-nav prev" onclick="prevSnap()"></div>
+        <div class="viewer-nav next" onclick="nextSnap()"></div>
+        
+        <div class="viewer-content">
+            <img id="viewer-img" src="" alt="Snap">
+            <div class="viewer-caption" id="viewer-caption"></div>
+        </div>
+    </div>
+
+    <!-- Create WanderSnap Modal -->
+    <div id="create-snap-modal" class="dashboard-modal-overlay snap-creation-overlay hidden">
+        <div class="dashboard-modal-card create-snap-card glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0;">Create WanderSnap</h2>
+                <div class="viewer-close" onclick="closeCreateSnap()">&times;</div>
+            </div>
+            
+            <div class="snap-preview-section">
+                <div class="snap-circle big-preview" id="snap-preview-circle">
+                    <img id="snap-preview-img" src="/static/logo.png" alt="Preview">
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 1rem;">Live Snap Preview</p>
+            </div>
+
+            <form id="create-snap-form" onsubmit="finalizeAddSnap(event)">
+                <div class="input-group">
+                    <label for="snap-upload">Select Memory Image</label>
+                    <input type="file" id="snap-upload" accept="image/*" onchange="previewSnapImage(event)" required>
+                </div>
+                <div class="input-group mt-2">
+                    <label for="snap-caption">Add a Caption</label>
+                    <input type="text" id="snap-caption" placeholder="E.g., Sunrise at the backwaters..." required>
+                </div>
+                <div class="input-group mt-2">
+                    <label for="snap-user-name">Your Name</label>
+                    <input type="text" id="snap-user-name" value="{{ user['full_name'] }}" required>
+                </div>
+                
+                <div class="modal-button-row">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateSnap()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Snap</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

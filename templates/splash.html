@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WanderSync | Intelligent Itinerary</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(rgba(17, 34, 23, 0.6), rgba(17, 34, 23, 0.8)), url("{{ url_for('static', filename='hero_bg.png') }}");
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .splash-logo-container {
+            perspective: 1200px;
+        }
+        .splash-logo {
+            width: 320px;
+            height: auto;
+            filter: drop-shadow(0 25px 35px rgba(0,0,0,0.6));
+            transform-origin: center center;
+            animation: subwayBounce 2s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+        }
+        
+        /* Smooth fade-out transition for page leaving */
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-logo-container" id="splash-container">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="WanderSync Splash Logo" class="splash-logo">
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Redirect smoothly to landing page after animation finishes
+            setTimeout(() => {
+                document.body.classList.add('fade-out');
+            }, 2600);
+            
+            setTimeout(() => {
+                window.location.href = '/home';
+            }, 3000); // Trigger physical redirect slightly after visual fade begins
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}Travel Blog - WanderSync{% endblock %}
+
+{% block head_extras %}
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+        }
+        /* Fade in animation */
+        body {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .reading-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--bg-surface);
+            padding: 50px 60px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            box-sizing: border-box;
+            text-align: left;
+        }
+        @media (max-width: 768px) {
+            .reading-container {
+                margin: 20px auto;
+                padding: 30px 20px;
+                border-radius: 0;
+            }
+        }
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top-color: var(--brand-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+{% endblock %}
+
+{% block nav_actions %}
+    <a href="/dashboard?route=blog" class="btn btn-secondary">← Back to Blogs</a>
+    {% if user %}
+        <button onclick="logout()" class="btn btn-primary" style="margin-left: 0.5rem;">Logout</button>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="reading-container" id="blog-content-container">
+        <div style="text-align: center; padding: 4rem 0;">
+            <div class="loader-spinner"></div>
+            <p style="margin-top: 1.5rem; color: var(--text-secondary);">Loading beautiful article...</p>
+        </div>
+    </div>
+
+{% endblock %}
+{% block scripts %}
+    <!-- Hidden var to pass to JS smoothly -->
+    <script>
+        const CURRENT_BLOG_ID = parseInt('{{ blog_id }}', 10);
+        const CURRENT_USER_ID = '{{ user.user_id if user else "" }}' || null;
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBlogData(CURRENT_BLOG_ID);
+        });
+
+        async function fetchBlogData(blogId) {
+            try {
+                const res = await fetch(`/api/blogs/${blogId}`);
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                if (!res.ok) throw new Error("Blog not found");
+                
+                const blog = await res.json();
+                renderBlog(blog);
+                loadComments(blogId);
+            } catch (err) {
+                document.getElementById('blog-content-container').innerHTML = `
+                    <div style="text-align: center; padding: 4rem 0;">
+                        <h2 style="color: var(--accent-red);">Story Not Found</h2>
+                        <p style="color: var(--text-secondary);">The story you are looking for does not exist or has been removed.</p>
+                        <a href="/dashboard?route=blog" class="btn btn-primary" style="margin-top: 1rem; display: inline-block; text-decoration: none;">Return to Feed</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderBlog(blog) {
+            const container = document.getElementById('blog-content-container');
+            
+            // Calculate read time
+            const wordCount = blog.content.split(/\s+/).length;
+            const readTime = Math.max(1, Math.ceil(wordCount / 200));
+            
+            let primaryImageHtml = '';
+            let otherImagesHtml = '';
+            if (blog.images && blog.images.length > 0) {
+                primaryImageHtml = `
+                    <div style="width: 100%; margin: 2.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                        <img src="${blog.images[0]}" style="width: 100%; max-height: 550px; object-fit: cover; display: block;">
+                    </div>
+                `;
+                if (blog.images.length > 1) {
+                    otherImagesHtml = `<div style="display: flex; flex-direction: column; gap: 2rem; margin: 3rem 0;">`;
+                    for(let i=1; i<blog.images.length; i++) {
+                        otherImagesHtml += `<img src="${blog.images[i]}" style="width: 100%; max-height: 550px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">`;
+                    }
+                    otherImagesHtml += `</div>`;
+                }
+            }
+
+            container.innerHTML = `
+                <!-- Title and Subtitle -->
+                <div style="margin-bottom: 2rem; text-align: left;">
+                    <span style="font-size: 0.85rem; color: var(--brand-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${blog.category}</span>
+                    <h1 style="font-size: 3rem; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-primary); line-height: 1.2; font-weight: 800; letter-spacing: -0.02em;">${blog.title}</h1>
+                    <p style="font-size: 1.25rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">${blog.short_description || ''}</p>
+                </div>
+                
+                <!-- Author Block & Actions -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;">
+                            ${blog.author_name.charAt(0)}
+                        </div>
+                        <div>
+                            <p style="margin: 0; font-weight: 600; color: var(--text-primary); font-size: 1.05rem;">${blog.author_name}</p>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">${blog.created_at.split(' ')[0]} • ${readTime} min read</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.8rem; align-items: center;">
+                        <button class="btn btn-secondary" id="like-btn" style="padding: 0.4rem 1rem; border-radius: 20px; border-color: ${blog.liked_by_me ? 'var(--accent-red)' : 'var(--border-subtle)'}; color: ${blog.liked_by_me ? 'var(--accent-red)' : 'var(--text-secondary)'}; background: transparent; transition: all 0.2s ease;" onclick="toggleLike(${blog.blog_id})">
+                            ${blog.liked_by_me ? '❤️ Liked' : '🤍 Like'} (<span id="page-likes-count">${blog.likes_count}</span>)
+                        </button>
+                    </div>
+                </div>
+                
+                ${primaryImageHtml}
+                
+                <!-- Blog Content Text -->
+                <div style="font-size: 1.2rem; line-height: 1.9; color: rgba(0,0,0,0.85); font-weight: 400; margin-bottom: 3rem; white-space: pre-wrap; font-family: 'Georgia', serif;">${blog.content}</div>
+                
+                ${otherImagesHtml}
+                
+                <!-- Discussion -->
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 3rem; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Responses (<span id="page-comments-count">${blog.comments_count}</span>)</h3>
+                    <div id="comments-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="loader-spinner"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function toggleLike(blogId) {
+            try {
+                const res = await fetch(`/api/blogs/${blogId}/like`, { method: 'POST' });
+                if (res.status === 401) return window.location.href = '/login';
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                
+                const countSpan = document.getElementById('page-likes-count');
+                const btnObj = document.getElementById('like-btn');
+                
+                countSpan.textContent = data.likes_count;
+                if (data.action === 'liked') {
+                    btnObj.innerHTML = `❤️ Liked (<span id="page-likes-count">${data.likes_count}</span>)`;
+                    btnObj.style.color = 'var(--accent-red)';
+                    btnObj.style.borderColor = 'var(--accent-red)';
+                } else {
+                    btnObj.innerHTML = `🤍 Like (<span id="page-likes-count">${data.likes_count}</span>)`;
+                    btnObj.style.color = 'var(--text-secondary)';
+                    btnObj.style.borderColor = 'var(--border-subtle)';
+                }
+            } catch (e) { console.error('Error toggling like'); }
+        }
+
+        async function loadComments(blogId) {
+            const container = document.getElementById('comments-container');
+            try {
+                const res = await fetch(`/api/blogs/${blogId}/comments`);
+                const comments = await res.json();
+                
+                container.innerHTML = '';
+                if (comments.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.95rem;">No responses yet. Be the first to start the discussion!</p>';
+                    return;
+                }
+                
+                comments.forEach(c => {
+                    container.innerHTML += `
+                        <div style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: bold;">
+                                        ${c.author_name.charAt(0)}
+                                    </div>
+                                    <span style="font-weight: 600; font-size: 0.95rem;">${c.author_name}</span>
+                                </div>
+                                <span style="font-size: 0.85rem; color: var(--text-disabled);">${c.created_at}</span>
+                            </div>
+                            <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-primary); margin: 0;">${c.comment_text}</p>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                container.innerHTML = '<p style="color: var(--accent-red);">Failed to load comments.</p>';
+            }
+        }
+    </script>
+{% endblock %}

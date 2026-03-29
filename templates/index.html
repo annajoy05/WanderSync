@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}WanderSync | Intelligent Itinerary{% endblock %}
+{% block nav_class %}navbar-landing{% endblock %}
+{% block nav_actions %}
+    {% if user %}
+        <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+        <button onclick="logout()" class="btn btn-primary" style="margin-left: 0.5rem;">Logout</button>
+    {% else %}
+        <a href="/login" class="btn btn-secondary">Log In</a>
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title" style="font-size: 5rem; letter-spacing: -0.05em; color: var(--text-primary);">WanderSync.</h1>
+            <p class="hero-subtitle" style="margin-bottom: 2.5rem; font-size: 1.25rem; color: var(--text-primary); font-weight: 500;">Discover breathtaking destinations and create unforgettable memories with our smart travel planner.</p>
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center; animation: fadeInUp 1.2s ease-out;">
+                <a href="/login" class="btn btn-primary btn-large" style="background: #4CAF50; color: var(--text-primary); border: none; font-weight: 600;">Start Planning</a>
+                <a href="/login?route=experience" class="btn btn-secondary btn-large" style="background: rgba(255,255,255,0.15); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.5); font-weight: 600; backdrop-filter: blur(4px);">Explore Destinations</a>
+            </div>
+        </div>
+
+    </header>
+{% endblock %}

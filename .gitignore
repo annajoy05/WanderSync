@@ -1,0 +1,27 @@
+# Security
+.env
+Session.vim
+*.swp
+
+# Environment
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Workspace
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project specifics
+*.log
+instance/
+dist/
+build/
+*.egg-info/
