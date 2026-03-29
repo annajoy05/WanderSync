@@ -132,14 +132,23 @@
                     </svg>
                 </div>
 
-                <!-- Flight Path & Clouds Background -->
-                <div class="flight-path-container">
-                    <svg class="cloud cloud-1" viewBox="0 0 24 24"><path d="M17.5,19c-3.037,0-5.5-2.463-5.5-5.5c0-0.106,0.003-0.21,0.01-0.312C11.52,13.084,11.02,13,10.5,13 c-2.485,0-4.5,2.015-4.5,4.5S8.015,22,10.5,22h7c2.485,0,4.5-2.015,4.5-4.5S19.985,13,17.5,13c-0.34,0-0.668,0.038-0.982,0.11 C16.29,11.237,14.542,10,12.5,10c-0.187,0-0.37,0.011-0.551,0.032C11.332,8.258,9.54,7,7.5,7C4.463,7,2,9.463,2,12.5 c0,0.137,0.005,0.272,0.015,0.406C0.849,13.626,0,15.215,0,17c0,2.761,2.239,5,5,5h12.5c2.485,0,4.5-2.015,4.5-4.5 S19.985,13,17.5,13z"/></svg>
-                    <svg class="cloud cloud-2" viewBox="0 0 24 24"><path d="M17.5,19c-3.037,0-5.5-2.463-5.5-5.5c0-0.106,0.003-0.21,0.01-0.312C11.52,13.084,11.02,13,10.5,13 c-2.485,0-4.5,2.015-4.5,4.5S8.015,22,10.5,22h7c2.485,0,4.5-2.015,4.5-4.5S19.985,13,17.5,13c-0.34,0-0.668,0.038-0.982,0.11 C16.29,11.237,14.542,10,12.5,10c-0.187,0-0.37,0.011-0.551,0.032C11.332,8.258,9.54,7,7.5,7C4.463,7,2,9.463,2,12.5 c0,0.137,0.005,0.272,0.015,0.406C0.849,13.626,0,15.215,0,17c0,2.761,2.239,5,5,5h12.5c2.485,0,4.5-2.015,4.5-4.5 S19.985,13,17.5,13z"/></svg>
-                    <svg class="flight-path-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
-                        <path d="M-50,150 Q200,50 600,-50" id="airplane-path" />
+                <!-- Subtle Flight Path Illustration -->
+                <div class="flight-path-background">
+                    <svg class="flight-path-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Location Pin (Start) -->
+                        <path d="M25 110 C25 100 35 100 35 110 C35 120 25 135 25 135 C25 135 15 120 15 110 C15 100 25 100 25 110 Z" fill="#ef4444" opacity="0.4" />
+                        <circle cx="25" cy="110" r="3" fill="white" opacity="0.6" />
+                        
+                        <!-- Dotted Flight Path -->
+                        <path d="M25 135 Q 60 130 80 80 T 130 70 Q 150 70 165 45" 
+                              fill="none" stroke="white" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.3" />
+                        
+                        <!-- Paper Plane (End) -->
+                        <g transform="translate(160, 40) rotate(-45)">
+                            <path d="M0 0 L20 10 L0 12 L4 10 Z" fill="#f59e0b" opacity="0.6" />
+                            <path d="M0 0 L20 10 L4 10 Z" fill="#d97706" opacity="0.4" />
+                        </g>
                     </svg>
-                    <div class="airplane-icon"><i class="fa-solid fa-plane"></i></div>
                 </div>
 
                 <div style="position: relative; z-index: 1;">
