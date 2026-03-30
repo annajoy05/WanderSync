@@ -19,12 +19,12 @@ def get_top_attractions(destination, user_prefs=None, limit=30):
     query = '''
         SELECT 
             p.place_name,
-            AVG(p.place_rating) as avg_rating,
-            AVG(p.entry_fee) as avg_fee,
+            COALESCE(AVG(p.place_rating), 0.5) as avg_rating,
+            COALESCE(AVG(p.entry_fee), 0.0) as avg_fee,
             COUNT(p.place_id) as visitation_count,
             STRING_AGG(t.interests, ',') as all_interests,
             STRING_AGG(t.travel_style, ',') as all_styles,
-            AVG(t.total_expense / NULLIF(t.trip_duration, 0)) as avg_daily_spend
+            COALESCE(AVG(t.total_expense / NULLIF(t.trip_duration, 0)), 0.0) as avg_daily_spend
         FROM places_visited p
         JOIN trip_experiences t ON p.trip_id = t.trip_id
         WHERE LOWER(t.destination) = LOWER(%s)
@@ -88,9 +88,9 @@ def get_travel_stats(destination):
     query = '''
         SELECT 
             travel_method,
-            AVG(travel_cost) as avg_cost,
-            AVG(travel_rating) as avg_rating,
-            AVG(distance_from_prev) as avg_distance,
+            COALESCE(AVG(travel_cost), 0.0) as avg_cost,
+            COALESCE(AVG(travel_rating), 4.0) as avg_rating,
+            COALESCE(AVG(distance_from_prev), 5.0) as avg_distance,
             COUNT(*) as frequency
         FROM places_visited p
         JOIN trip_experiences t ON p.trip_id = t.trip_id
@@ -114,8 +114,8 @@ def get_best_stay(destination, user_prefs=None):
     query = '''
         SELECT 
             stay_name,
-            AVG(stay_rating) as avg_rating,
-            AVG(stay_price) as avg_price,
+            COALESCE(AVG(stay_rating), 4.0) as avg_rating,
+            COALESCE(AVG(stay_price), 0.0) as avg_price,
             COUNT(*) as frequency
         FROM trip_experiences
         WHERE LOWER(destination) = LOWER(%s) AND stay_name IS NOT NULL AND stay_name != ''
@@ -143,8 +143,8 @@ def get_best_intercity_travel(origin, destination):
     query = '''
         SELECT 
             p.travel_method,
-            AVG(p.travel_cost) as avg_cost,
-            AVG(p.travel_rating) as avg_rating,
+            COALESCE(AVG(p.travel_cost), 0.0) as avg_cost,
+            COALESCE(AVG(p.travel_rating), 4.0) as avg_rating,
             COUNT(*) as frequency
         FROM places_visited p
         JOIN trip_experiences t ON p.trip_id = t.trip_id

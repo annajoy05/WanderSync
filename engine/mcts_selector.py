@@ -53,7 +53,8 @@ def select_best_attractions(all_attractions, budget, duration=1, iterations=500)
             action = random.choice(node.untried_actions)
             node.untried_actions.remove(action)
             # Simple budget check before expansion to avoid wasting iterations
-            if sum(attr_map[s]['avg_fee'] for s in node.state) + attr_map[action]['avg_fee'] <= budget:
+            current_cost = sum((attr_map[s]['avg_fee'] or 0.0) for s in node.state)
+            if current_cost + (attr_map[action]['avg_fee'] or 0.0) <= budget:
                 new_state = node.state + [action]
                 node = node.add_child(action, new_state, place_names)
             
@@ -64,11 +65,12 @@ def select_best_attractions(all_attractions, budget, duration=1, iterations=500)
         
         for name in possible:
             if len(state) >= max_places: break
-            if sum(attr_map[s]['avg_fee'] for s in state) + attr_map[name]['avg_fee'] <= budget:
+            current_cost = sum((attr_map[s]['avg_fee'] or 0.0) for s in state)
+            if current_cost + (attr_map[name]['avg_fee'] or 0.0) <= budget:
                 state.append(name)
             
         # Evaluation (Reward function)
-        total_rating = sum(attr_map[name]['avg_rating'] for name in state)
+        total_rating = sum((attr_map[name]['avg_rating'] or 0.0) for name in state)
         if state:
             # Reward both quality and quantity
             reward = (total_rating / len(state)) * len(state)

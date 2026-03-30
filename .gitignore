@@ -25,3 +25,4 @@ instance/
 dist/
 build/
 *.egg-info/
+static/uploads/
